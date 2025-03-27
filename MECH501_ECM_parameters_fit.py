@@ -26,7 +26,7 @@ def simulate_ecm(params, current, T, dt=1, Q_nom=14000, T_ref=25):
     V_terminal = np.zeros(N)
     
     # Initial conditions
-    V1_k, V2_k, soc_k = 0.0, 0.0, 1.0 # zero diffusion voltage at first
+    V1_k, V2_k, soc_k = 0.0, 0.0, 1.0 # zero diffusion voltage at t=0
     
     for k in range(N):
         I_k = current[k]
@@ -101,7 +101,7 @@ datasets.append({
 })
 
 # Initial guess for parameters: [R0, R1, C1, R2, C2, ocv_temp_coeff, Q]
-initial_params = [0.01, 0.01, 1000, 0.01, 1000, 0.0, 1750]
+initial_params = [0.01, 0.005, 1000, 0.001, 5000, 0.0, 1400]
 
 # Optimize the parameters using Nelder-Mead algorithm.
 result = minimize(objective_function_combined, initial_params, args=(datasets,), method='Nelder-Mead')
