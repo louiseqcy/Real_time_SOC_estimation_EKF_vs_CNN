@@ -26,7 +26,7 @@ def simulate_ecm(params, current, T, dt=1, Q_nom=14000, T_ref=25):
     V_terminal = np.zeros(N)
     
     # Initial conditions
-    V1_k, V2_k, soc_k = 0.0, 0.0, 1.0
+    V1_k, V2_k, soc_k = 0.0, 0.0, 1.0 # zero diffusion voltage at first
     
     for k in range(N):
         I_k = current[k]
