@@ -16,7 +16,7 @@ Qcell = 14000
 N = 1
 M = 1 # not sure
 
-q = np.ones(N) # c=Charge in the cell
+q = np.ones(N) # Charge in the cell
 z = np.ones(N) # SOC: z = q / Qcell
 vOCV = np.ones(N) # Open-circuit-voltage (OCV)
 vR0 = np.ones(N) # Voltage at internal resistance
