@@ -44,7 +44,7 @@ R2 = param_fn(build_interpolator("R2"))
 C2 = param_fn(build_interpolator("C2"))
 
 # Constants
-Qcell = 14000  # Coulombs
+Qcell = 14000  # mAh
 gamma, M = 1, 1
 eta_tilda = 0.98
 dt = 1.0
