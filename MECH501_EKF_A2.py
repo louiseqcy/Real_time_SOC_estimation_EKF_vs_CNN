@@ -44,30 +44,37 @@ R2 = param_fn(build_interpolator("R2"))
 C2 = param_fn(build_interpolator("C2"))
 
 # Constants
-Qcell = 14000  # mAh
+Qcell = 14000  # Coulombs
 gamma, M = 1, 1
 eta_tilda = 0.98
 dt = 1.0
 N = len(current)
 
-# EKF Initialization
+# Initialization
+# Use first time step assuming battery is at rest in simulation
+voc_init = voltage_meas[0]
+temp_init = temp_true[0]
+
+# Replace fsolve with brute-force OCV lookup
+soc_grid = np.linspace(0.0, 1.0, 1000)
+voc_grid = np.array([voc_from_soc_temp(soc, temp_init) for soc in soc_grid])
+soc0_guess = soc_grid[np.argmin(np.abs(voc_grid - voc_init))]
+q0 = Qcell * soc0_guess
+
+print(f"Interpolated SOC guess: {soc0_guess:.3f}, voc_init = {voc_init:.4f} V at T = {temp_init:.2f}°C")
+
+# Set initial state estimate
 z_hat = np.zeros((N, 5))  # [q, vR1, vR2, vh, vR0]
+z_hat[0] = [q0, 0, 0, 0, 0]
+
+# Initial covariance
 P_tilda = np.zeros((N, 5, 5))
 P_hat = np.zeros((N, 5, 5))
+P_tilda[0] = np.diag([1e2, 1e-4, 1e-4, 1e-2, 1e-4])
+
+# Kalman gain and measurement prediction
 K = np.zeros((N, 5, 1))
 y_hat = np.zeros(N)
-
-# Estimate initial SOC from first voltage
-voc0 = voltage_meas[0]
-temp0 = temp_true[0]
-soc0_guess = fsolve(lambda soc: voc_from_soc_temp(soc, temp0) - voc0, 0.8)[0]
-soc0_guess = np.clip(soc0_guess, 0.0, 1.0)
-q0 = Qcell * soc0_guess
-z_hat[0] = [q0, 0, 0, 0, 0]
-P_tilda[0] = np.diag([1e3, 1e-4, 1e-4, 1e-2, 1e-4])
-
-# Measurement noise
-R = np.array([[0.01**2]])
 
 # EKF Loop
 for k in range(1, N):
