@@ -84,9 +84,9 @@ zu = np.array([Qcell, r1_0 * imax * ez1, r2_0 * imax * ez2, M, 0])
 P_tilda[0] = np.diag(0.25 * (zu - zl) ** 2)
 
 # === Noise parameters ===
-R = np.array([[0.01**2]]) #1mV precision
+R = np.array([[0.005**2]]) #5mV precision
 sigma_i = 0.02
-Qp = np.diag([0.5e-7, 1e-7, 1e-3, 1e-7, 1e-3, 1e-2, 1e-2, 1e-2])
+Qp = np.diag([1e-7, 1e-9, 1e-3, 2e-7, 1e-3, 1e-2, 1e-2, 1e-2])
 
 # === EKF Loop ===
 for k in range(1, N):
