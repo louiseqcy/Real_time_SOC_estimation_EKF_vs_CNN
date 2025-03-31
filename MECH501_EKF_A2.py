@@ -48,8 +48,8 @@ C2 = lambda soc, temp: C2_interp(np.array([[temp, soc]]))[0]
 
 # === Constants ===
 Qcell = 50400  # As
-gamma, M = 1, 1 # not tuned
-eta_tilda = 0.98
+gamma, M = 1.14, 0.4445  # tuned gamma & M
+eta_tilda = 0.98 # tuned Coulombic efficiency
 dt = 1.0
 N = len(current)
 
@@ -86,7 +86,7 @@ P_tilda[0] = np.diag(0.25 * (zu - zl) ** 2)
 # === Noise parameters ===
 R = np.array([[0.01**2]]) #1mV precision
 sigma_i = 0.02
-Qp = np.diag([1e-7, 1e-7, 1e-3, 1e-7, 1e-3, 1e-2, 1e-2, 1e-2])
+Qp = np.diag([0.5e-7, 1e-7, 1e-3, 1e-7, 1e-3, 1e-2, 1e-2, 1e-2])
 
 # === EKF Loop ===
 for k in range(1, N):
