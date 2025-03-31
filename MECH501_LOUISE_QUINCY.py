@@ -27,9 +27,7 @@ scaler_output_path = "cnn_soc_scaler.pkl"
 
 generate_simulation_data = False
 generate_test_data = False
-to_train_cnn_model = False
-
-
+to_train_cnn_model = True
 
 # Hysterisis Simulation Parmaters
 k0 = 0.005   
@@ -256,6 +254,7 @@ def predict_with_cnn(data_path, model, scaler, output_path, display_results=Fals
     if display_results:
         plt.figure(figsize=(10, 6))
         plt.plot(results_df['Time_s'], results_df['Predicted_SOC'], label='Predicted SOC')
+        plt.plot(results_df['Time_s'], results_df['True_SOC'], label='True SOC')
         plt.fill_between(results_df['Time_s'],
                         results_df['Predicted_SOC'] - results_df['Uncertainty_STD'],
                         results_df['Predicted_SOC'] + results_df['Uncertainty_STD'],
@@ -298,6 +297,8 @@ def train_cnn_model(input_path, model_output_path, scaler_output_path, display_r
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
+    loss_history = []
+
     model.train()
     for epoch in range(200):
         optimizer.zero_grad()
@@ -305,6 +306,8 @@ def train_cnn_model(input_path, model_output_path, scaler_output_path, display_r
         loss = criterion(output, y_train_tensor)
         loss.backward()
         optimizer.step()
+        
+        loss_history.append(loss.item())  # ⬅️ store loss
 
     model.train()
 
@@ -341,7 +344,17 @@ def train_cnn_model(input_path, model_output_path, scaler_output_path, display_r
         plt.tight_layout()
         plt.show()
 
-    return model, scaler, results_df, rms_error
+        plt.figure(figsize=(8, 4))
+        plt.plot(loss_history, label='Training Loss')
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss (MSE)")
+        plt.title("CNN Training Loss Over Epochs")
+        plt.grid(True)
+        plt.legend()
+        plt.tight_layout()
+        plt.show()
+
+    return model, scaler, results_df, rms_error, loss_history
 
 def generate_battery_test_data(output_path, I_profile, plot=False):
     model = ECMWithHysteresis(dt=dt, mass=0.4, cp=1050, tau=1000, T_ambient=initial_T_ambient)
@@ -708,7 +721,7 @@ if __name__ == "__main__":
    
     # Predict SOC using CNN and produce RMS Error
     if to_train_cnn_model:
-        model, scaler, results, rms_error_cnn = train_cnn_model(simulation_output_path, model_output_path, scaler_output_path, display_results=True, cnn_predictions_output_path=cnn_predictions_output_path)
+        model, scaler, results, rms_error_cnn, loss_history = train_cnn_model(simulation_output_path, model_output_path, scaler_output_path, display_results=True, predictions_output_path=cnn_predictions_output_path)
     else:
         model, scaler = load_cnn_model_from_file(model_output_path, scaler_output_path)
         results_cnn, rms_error_cnn = predict_with_cnn(simulation_output_path, model, scaler, cnn_predictions_output_path, display_results=True)
