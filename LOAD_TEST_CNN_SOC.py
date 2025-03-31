@@ -8,7 +8,7 @@ from sklearn.metrics import mean_squared_error
 
 MODEL_PATH = "cnn_soc_model.pth"
 SCALER_PATH = "cnn_soc_scaler.pkl"
-NEW_DATA_PATH = "new_battery_data.csv"
+NEW_DATA_PATH = "battery_sim_output.csv"
 OUTPUT_CSV = "new_soc_predictions.csv"
 WINDOW_SIZE = 3
 MC_ITER = 100
