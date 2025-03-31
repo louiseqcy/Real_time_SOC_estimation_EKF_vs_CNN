@@ -3,18 +3,15 @@ import math
 import sympy as sp
 
 # All constants
-eta = 1
-eta_tilda = 1
-Tau1 = 1
-Tau2 = 1
-dt = 1
-R0 = 1
-R1 = 1
-R2 = 1
-gamma = 1
-Qcell = 14000
-N = 1
-M = 1 # not sure
+
+# Battery parameters (example values)
+R0, R1, R2 = 0.0035, 0.007, 0.0001       # Ohms
+C1, C2 = 6761, 1206                      # Farads
+Tau1, Tau2 = R1*C1, R2*C2
+gamma, M = 1, 1
+Qcell = 14_000                           # As per your context
+eta_tilda = 0.98
+dt = 1    
 
 q = np.ones(N) # Charge in the cell
 z = np.ones(N) # SOC: z = q / Qcell
@@ -93,24 +90,53 @@ z_tilda[0] = [q0, vR1[0], vR2[0], vh[0], vR0[0]] # after long resting time, this
 # Initilization of the system state error
 P_tilda[0] = np.diag()
 
-# #%% Predict
-# Prediction of the system state
-z_hat[k+1] = z(k+1)
+# EKF loop
+for k in range(1, N):
+    i_k = current[k-1]
+    eta = eta_tilda if i_k < 0 else 1
 
-# Prediction of the system state error
-P_hat[k+1] = A[k+1] @ P_tilda[k] @ A[k+1].T + Q[k]
+    # Precompute decays
+    e1 = math.exp(-dt / Tau1)
+    e2 = math.exp(-dt / Tau2)
+    eh = math.exp(-abs(eta * i_k * gamma / Qcell) * dt)
 
-# Prediction of the measured value
-y[k+1] = y(k+1, z_hat[k+1])
+    # Previous state
+    q, vR1, vR2, vh, _ = z_hat[k-1]
 
-# Kalman gain
-K[k+1] = P_hat[k+1] @ C[k+1].T / (C[k+1] @ P_hat[k+1] @ C[k+1].T + R[k+1] )
+    # State Prediction
+    q_pred = q - eta * i_k * dt
+    vR1_pred = e1 * vR1 + R1 * (1 - e1) * i_k
+    vR2_pred = e2 * vR2 + R2 * (1 - e2) * i_k
+    vh_pred = eh * vh - M * (1 - eh) * np.sign(i_k)
+    vR0_pred = R0 * current[k]
 
-#%% Correction Update
-# Correction of the system state
-z_tilda[k+1] = z_hat[k+1] + K[k+1] @ (v[k+1] - y_hat[k+1])
+    z_hat[k] = [q_pred, vR1_pred, vR2_pred, vh_pred, vR0_pred]
 
-# Correction of the system state error
-P_tilda[k+1] = (np.ones(N,N) - K[k+1] @ C[k+1]) @ P_hat[k] 
+    # A matrix
+    A = np.diag([1, e1, e2, eh, 0])
+
+    # C matrix (Jacobian of measurement function)
+    dvoc_dq = (voc(q_pred + 1e-3) - voc(q_pred - 1e-3)) / 2e-3  # Numerical derivative
+    C = np.array([[dvoc_dq, -1, -1, 1, -1]])
+
+    # Predict measurement
+    y_hat[k] = voc(q_pred) - vR0_pred - vR1_pred - vR2_pred + vh_pred
+
+    # Process noise (tune or compute via J·Qp·Jᵀ + B·S·Bᵀ)
+    Q = np.diag([0.01, 1e-4, 1e-4, 1e-4, 1e-5])
+
+    # Predict covariance
+    P_hat[k] = A @ P_tilda[k-1] @ A.T + Q
+
+    # Kalman gain
+    S_k = C @ P_hat[k] @ C.T + R
+    K[k] = P_hat[k] @ C.T @ np.linalg.inv(S_k)
+
+    # Correction step
+    z_hat[k] += (K[k] @ (voltage_meas[k] - y_hat[k])).flatten()
+    P_tilda[k] = (np.eye(5) - K[k] @ C) @ P_hat[k]
+
+# Convert final q to SOC
+SOC_estimated = z_hat[:, 0] / Qcell
 
 
