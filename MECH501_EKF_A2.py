@@ -85,7 +85,7 @@ P_tilda[0] = np.diag(0.25 * (zu - zl) ** 2)
 
 # === Noise parameters ===
 R = np.array([[0.005**2]]) #5mV precision
-sigma_i = 0.01 # 10mA precision
+sigma_i = 0.01 #10mA precision
 Qp = np.diag([1e-7, 1e-9, 1e-3, 2e-7, 1e-3, 1e-5, 1e-2, 1e-2])
 
 # === EKF Loop ===
