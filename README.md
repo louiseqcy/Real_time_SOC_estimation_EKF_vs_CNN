@@ -1,2 +1,1 @@
-# 501
-Real-time SOC estimation
+Real-time SOC estimation of a Lithium-Ion Battery
