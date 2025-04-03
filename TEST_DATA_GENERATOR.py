@@ -3,10 +3,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from scipy.optimize import fsolve
 
+
 k0 = 0.005   
 k1 = 0.0002    
 k2 = 0.01      
 
+# 2RC ECM with Hysteresis voltage model
 class ECMWithHysteresis:
     def __init__(self, R0=0.0035, R1=0.007, C1=6761,
                  R2=0.0001, C2=1206,
