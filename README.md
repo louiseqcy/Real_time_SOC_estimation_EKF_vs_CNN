@@ -8,3 +8,5 @@ CNN_SOC.py: Last version of Real-time SOC estimation using Convolutional Neural 
 
 MECH501_LOUISE_QUINCY.py: complete CNN vs EKF implementation for real-time SOC estimation
                 Output: ekf_soc_predictions.csv and cnn_soc_predictions
+
+Real-time SOC estimation EKF vs CNN.pdf - Theory of implementation and results comparison
