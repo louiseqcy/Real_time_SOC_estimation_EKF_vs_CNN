@@ -9,6 +9,8 @@ from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 import joblib
 
+# Convolutional Neural Network real time SOC Estimation
+
 df = pd.read_csv('battery_sim_output.csv')
 features = ['Voltage_V', 'Current_A', 'Temperature_C']
 target = 'SOC'
