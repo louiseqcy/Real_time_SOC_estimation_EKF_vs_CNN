@@ -4,6 +4,8 @@ from scipy.optimize import fsolve
 from scipy.interpolate import RegularGridInterpolator
 import matplotlib.pyplot as plt
 
+# EKF with better Parameterization & graphs 
+
 df = pd.read_csv("battery_sim_output.csv")
 time = df["Time_s"].values
 voltage_meas = df["Voltage_V"].values
